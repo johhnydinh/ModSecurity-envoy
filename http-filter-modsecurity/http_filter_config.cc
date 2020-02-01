@@ -15,14 +15,6 @@ namespace Configuration {
 
 class HttpModSecurityFilterConfig : public NamedHttpFilterConfigFactory {
 public:
-  Http::FilterFactoryCb createFilterFactory(const Json::Object& json_config, const std::string&,
-                                            FactoryContext& context) override {
-
-    modsecurity::ModsecurityFilterConfigDecoder proto_config;
-    translateHttpModSecurityFilter(json_config, proto_config);
-
-    return createFilter(proto_config, context);
-  }
 
   Http::FilterFactoryCb createFilterFactoryFromProto(const Protobuf::Message& proto_config,
                                                      const std::string&,
