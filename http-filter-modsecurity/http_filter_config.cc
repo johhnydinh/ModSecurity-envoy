@@ -3,7 +3,7 @@
 
 #include "http_filter.h"
 
-#include "common/config/json_utility.h"
+#include "json_utils.h"
 #include "envoy/registry/registry.h"
 
 #include "http-filter-modsecurity/http_filter.pb.h"
@@ -57,7 +57,7 @@ private:
 
   void translateHttpModSecurityFilter(const Json::Object& json_config,
                                         modsecurity::ModsecurityFilterConfigDecoder& proto_config) {
-
+    proto_config
     // normally we want to validate the json_config againts a defined json-schema here.
     JSON_UTIL_SET_STRING(json_config, proto_config, rules_path);
     JSON_UTIL_SET_STRING(json_config, proto_config, rules_inline);
