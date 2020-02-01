@@ -28,7 +28,7 @@ envoy_cc_library(
     hdrs = glob(["utility.h", "http_filter.h", "webhook_fetcher.h", "well_known_names.h"]),
     repository = "@envoy",
     deps = [
-        ":http_filter_proto_cc",
+        ":pkg_cc_proto",
         "//:libmodsecurity",
         "@envoy//source/exe:envoy_common_lib",
     ],
