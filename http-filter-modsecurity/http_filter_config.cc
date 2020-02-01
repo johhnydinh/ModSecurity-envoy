@@ -39,7 +39,7 @@ public:
     return ProtobufTypes::MessagePtr{new modsecurity::ModsecurityFilterConfigDecoder()};
   }
 
-  std::string name() override { 
+  std::string name() const override { 
     return Envoy::Http::ModSecurityFilterNames::get().ModSecurity;
   }
 
