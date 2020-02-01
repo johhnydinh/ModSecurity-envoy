@@ -3,7 +3,6 @@ syntax = "proto3";
 package modsecurity;
 
 import "google/protobuf/duration.proto";
-import "gogoproto/gogo.proto";
 
 import "validate/validate.proto";
 
@@ -63,8 +62,7 @@ message HttpUri {
     // Sets the maximum duration in milliseconds that a response can take to arrive upon request.
     google.protobuf.Duration timeout = 3 [
       (validate.rules).duration.gte = {},
-      (validate.rules).duration.required = true,
-      (gogoproto.stdduration) = true
+      (validate.rules).duration.required = true
     ];
   }
   
