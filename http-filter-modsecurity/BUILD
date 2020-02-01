@@ -7,15 +7,19 @@ load(
     "envoy_cc_test",
 )
 
-load("@envoy_api//bazel:api_build_system.bzl", "api_proto_library")
+load("@envoy_api//bazel:api_build_system.bzl", "api_proto_package")
 
-api_proto_library(
-    name = "http_filter_proto",
-    srcs = ["http_filter.proto"],
+envoy_cc_binary(
+    name = "envoy",
+    repository = "@envoy",
     deps = [
-        # TODO - "@envoy_api//envoy/api/v2/core:http_uri" (bad visibility)
-    ]
+        ":http_filter_config",
+        "@envoy//source/exe:envoy_main_entry_lib",
+    ],
 )
+
+# Don't need to set name and dest no more
+api_proto_package()
 
 envoy_cc_library(
     name = "http_filter_lib",
