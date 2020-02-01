@@ -4,7 +4,7 @@
 
 #include "common/protobuf/protobuf.h"
 
-// NOLINT(namespace-envoy)
+// NOLINT
 
 // Set a string field in a protobuf message with the corresponding field's string
 // value from a JSON object.
