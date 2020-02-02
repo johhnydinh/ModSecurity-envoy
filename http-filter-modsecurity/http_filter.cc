@@ -306,7 +306,7 @@ bool HttpModSecurityFilter::intervention() {
         intervined_ = true;
         ENVOY_LOG(debug, "intervention");
         decoder_callbacks_->sendLocalReply(static_cast<Http::Code>(modsec_transaction_->m_it.status), 
-                                           "ModSecurity Action\n",
+                                           "empty\n",
                                            [](Http::HeaderMap& headers) {
                                            }, absl::nullopt, "");
     }
@@ -389,12 +389,9 @@ void HttpModSecurityFilter::logCb(const modsecurity::RuleMessage * ruleMessage) 
     ENVOY_LOG(info, "Rule Id: {} phase: {}",
                     ruleMessage->m_ruleId,
                     ruleMessage->m_phase);
-    ENVOY_LOG(info, "* {} action. {}",
-                    // Note - since ModSecurity >= v3.0.3 disruptive actions do not invoke the callback
-                    // see https://github.com/SpiderLabs/ModSecurity/commit/91daeee9f6a61b8eda07a3f77fc64bae7c6b7c36
-                    ruleMessage->m_isDisruptive ? "Disruptive" : "Non-disruptive",
-                    modsecurity::RuleMessage::log(ruleMessage));
-    config_->webhook_fetcher()->invoke(getRuleMessageAsJsonString(ruleMessage));
+    ENVOY_LOG(info, modsecurity::RuleMessage::log(ruleMessage));
+    // TODO re-activate webhook
+    // config_->webhook_fetcher()->invoke(getRuleMessageAsJsonString(ruleMessage));
 }
 
 } // namespace Http
