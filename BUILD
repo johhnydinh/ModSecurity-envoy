@@ -9,7 +9,7 @@ load(
 
 alias(
     name = "envoy",
-    actual = ":envoy-static",
+    actual = ":envoy-static.stripped",
 )
 
 envoy_cc_binary(
