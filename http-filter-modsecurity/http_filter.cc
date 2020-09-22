@@ -63,7 +63,7 @@ WebhookFetcherSharedPtr HttpModSecurityFilterConfig::webhook_fetcher() {
     return tls_->getTyped<ThreadLocalWebhook>().webhook_fetcher_;
 }
 
-void HttpModSecurityFilterConfig::onSuccess(const Http::MessagePtr& response) {
+void HttpModSecurityFilterConfig::onSuccess(const Http::AsyncClient::ResponseMessagePtr& response) {
     ENVOY_LOG(info, "webhook success!");
 }
 void HttpModSecurityFilterConfig::onFailure(FailureReason reason) {
@@ -99,7 +99,7 @@ const char* getProtocolString(const Protocol protocol) {
   NOT_REACHED_GCOVR_EXCL_LINE;
 }
 
-FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(HeaderMap& headers, bool end_stream) {
+FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(RequestHeaderMap& headers, bool end_stream) {
     ENVOY_LOG(debug, "HttpModSecurityFilter::decodeHeaders");
     if (intervined_ || request_processed_) {
         ENVOY_LOG(debug, "Processed");
@@ -202,7 +202,7 @@ FilterDataStatus HttpModSecurityFilter::decodeData(Buffer::Instance& data, bool 
     return getRequestStatus();
 }
 
-FilterTrailersStatus HttpModSecurityFilter::decodeTrailers(HeaderMap&) {
+FilterTrailersStatus HttpModSecurityFilter::decodeTrailers(RequestHeaderMap&) {
   return FilterTrailersStatus::Continue;
 }
 
@@ -211,7 +211,7 @@ void HttpModSecurityFilter::setDecoderFilterCallbacks(StreamDecoderFilterCallbac
 }
 
 
-FilterHeadersStatus HttpModSecurityFilter::encodeHeaders(HeaderMap& headers, bool end_stream) {
+FilterHeadersStatus HttpModSecurityFilter::encodeHeaders(ResponseHeaderMap& headers, bool end_stream) {
     ENVOY_LOG(debug, "HttpModSecurityFilter::encodeHeaders");
     if (intervined_ || response_processed_) {
         ENVOY_LOG(debug, "Processed");
@@ -247,7 +247,7 @@ FilterHeadersStatus HttpModSecurityFilter::encodeHeaders(HeaderMap& headers, boo
     return getResponseHeadersStatus();
 }
 
-FilterHeadersStatus HttpModSecurityFilter::encode100ContinueHeaders(HeaderMap& headers) {
+FilterHeadersStatus HttpModSecurityFilter::encode100ContinueHeaders(ResponseHeaderMap& headers) {
     return FilterHeadersStatus::Continue;
 }
 
@@ -287,7 +287,7 @@ FilterDataStatus HttpModSecurityFilter::encodeData(Buffer::Instance& data, bool 
     return getResponseStatus();
 }
 
-FilterTrailersStatus HttpModSecurityFilter::encodeTrailers(HeaderMap&) {
+FilterTrailersStatus HttpModSecurityFilter::encodeTrailers(ResponseTrailerMap&) {
     return FilterTrailersStatus::Continue;
 }
 

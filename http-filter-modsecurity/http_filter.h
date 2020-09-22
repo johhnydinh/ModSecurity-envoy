@@ -33,7 +33,7 @@ public:
   std::shared_ptr<modsecurity::Rules> modsec_rules_;
 
   // Webhook Callbacks
-  void onSuccess(const Http::MessagePtr& response) override;
+  void onSuccess(const Http::AsyncClient::ResponseMessagePtr& response) override;
   void onFailure(FailureReason reason) override;
 
 private:
@@ -82,16 +82,16 @@ public:
   void onDestroy() override;
 
   // Http::StreamDecoderFilter
-  FilterHeadersStatus decodeHeaders(HeaderMap&, bool end_stream) override;
+  FilterHeadersStatus decodeHeaders(RequestHeaderMap&, bool end_stream) override;
   FilterDataStatus decodeData(Buffer::Instance&, bool end_stream) override;
-  FilterTrailersStatus decodeTrailers(HeaderMap&) override;
+  FilterTrailersStatus decodeTrailers(RequestHeaderMap&) override;
   void setDecoderFilterCallbacks(StreamDecoderFilterCallbacks&) override;
 
   // Http::StreamEncoderFilter
-  FilterHeadersStatus encode100ContinueHeaders(HeaderMap& headers) override;
-  FilterHeadersStatus encodeHeaders(HeaderMap&, bool end_stream) override;
+  FilterHeadersStatus encode100ContinueHeaders(ResponseHeaderMap& headers) override;
+  FilterHeadersStatus encodeHeaders(ResponseHeaderMap&, bool end_stream) override;
   FilterDataStatus encodeData(Buffer::Instance&, bool end_stream) override;
-  FilterTrailersStatus encodeTrailers(HeaderMap&) override;
+  FilterTrailersStatus encodeTrailers(ResponseTrailerMap&) override;
   void setEncoderFilterCallbacks(StreamEncoderFilterCallbacks&) override;
   FilterMetadataStatus encodeMetadata(MetadataMap& metadata_map) override;
 

@@ -49,7 +49,7 @@ void WebhookFetcher::invoke(const std::string& body) {
   //                       DurationUtil::durationToMilliseconds(uri_.timeout()))));
 }
 
-void WebhookFetcher::onSuccess(Http::MessagePtr&& response) {
+void WebhookFetcher::onSuccess(const Http::AsyncClient::Request& request, Http::AsyncClient::ResponseMessagePtr&& response) {
   const uint64_t status_code = Http::Utility::getResponseStatus(response->headers());
   if (status_code == enumToInt(Http::Code::OK)) {
     ENVOY_LOG(debug, "Webhook [uri = {}]: success", uri_.uri());
@@ -62,7 +62,7 @@ void WebhookFetcher::onSuccess(Http::MessagePtr&& response) {
 
 }
 
-void WebhookFetcher::onFailure(Http::AsyncClient::FailureReason reason) {
+void WebhookFetcher::onFailure(const Http::AsyncClient::Request& request, Http::AsyncClient::FailureReason reason) {
   ENVOY_LOG(debug, "Webhook [uri = {}]: network error {}", uri_.uri(), enumToInt(reason));
   callback_.onFailure(FailureReason::Network);
 }
