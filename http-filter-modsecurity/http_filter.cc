@@ -106,9 +106,9 @@ FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(RequestHeaderMap& heade
         return getRequestHeadersStatus();
     }
     // TODO - do we want to support dynamicMetadata?
-    const envoy::config::core::v3::Metadata* metadata = decoder_callbacks_->route()->routeEntry()->metadata()->get();
-    const auto& disable = Envoy::Config::Metadata::metadataValue(metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().Disable);
-    const auto& disable_request = Envoy::Config::Metadata::metadataValue(metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().DisableRequest);
+    const auto& metadata = decoder_callbacks_->route()->routeEntry()->metadata();
+    const auto& disable = Envoy::Config::Metadata::metadataValue(&metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().Disable);
+    const auto& disable_request = Envoy::Config::Metadata::metadataValue(&metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().DisableRequest);
     if (disable_request.bool_value() || disable.bool_value()) {
         ENVOY_LOG(debug, "Filter disabled");
         request_processed_ = true;
@@ -199,7 +199,7 @@ FilterDataStatus HttpModSecurityFilter::decodeData(Buffer::Instance& data, bool 
     return getRequestStatus();
 }
 
-FilterTrailersStatus HttpModSecurityFilter::decodeTrailers(RequestHeaderMap&) {
+FilterTrailersStatus HttpModSecurityFilter::decodeTrailers(RequestTrailerMap&) {
   return FilterTrailersStatus::Continue;
 }
 
@@ -215,9 +215,9 @@ FilterHeadersStatus HttpModSecurityFilter::encodeHeaders(ResponseHeaderMap& head
         return getResponseHeadersStatus();
     }
     // TODO - do we want to support dynamicMetadata?
-    const envoy::config::core::v3::Metadata* metadata = encoder_callbacks_->route()->routeEntry()->metadata()->get();
-    const auto& disable = Envoy::Config::Metadata::metadataValue(metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().Disable);
-    const auto& disable_response = Envoy::Config::Metadata::metadataValue(metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().DisableResponse);
+    const auto& metadata = encoder_callbacks_->route()->routeEntry()->metadata();
+    const auto& disable = Envoy::Config::Metadata::metadataValue(&metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().Disable);
+    const auto& disable_response = Envoy::Config::Metadata::metadataValue(&metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().DisableResponse);
     if (disable.bool_value() || disable_response.bool_value()) {
         ENVOY_LOG(debug, "Filter disabled");
         response_processed_ = true;

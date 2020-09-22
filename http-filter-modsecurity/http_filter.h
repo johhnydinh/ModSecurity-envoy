@@ -84,7 +84,7 @@ public:
   // Http::StreamDecoderFilter
   FilterHeadersStatus decodeHeaders(RequestHeaderMap&, bool end_stream) override;
   FilterDataStatus decodeData(Buffer::Instance&, bool end_stream) override;
-  FilterTrailersStatus decodeTrailers(RequestHeaderMap&) override;
+  FilterTrailersStatus decodeTrailers(RequestTrailerMap&) override;
   void setDecoderFilterCallbacks(StreamDecoderFilterCallbacks&) override;
 
   // Http::StreamEncoderFilter
