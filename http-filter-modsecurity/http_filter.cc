@@ -106,7 +106,7 @@ FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(RequestHeaderMap& heade
         return getRequestHeadersStatus();
     }
     // TODO - do we want to support dynamicMetadata?
-    const auto& metadata = decoder_callbacks_->route()->routeEntry()->metadata();
+    const envoy::config::core::v3::Metadata* metadata = decoder_callbacks_->route()->routeEntry()->metadata()->get();
     const auto& disable = Envoy::Config::Metadata::metadataValue(metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().Disable);
     const auto& disable_request = Envoy::Config::Metadata::metadataValue(metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().DisableRequest);
     if (disable_request.bool_value() || disable.bool_value()) {
@@ -173,10 +173,7 @@ FilterDataStatus HttpModSecurityFilter::decodeData(Buffer::Instance& data, bool 
         return getRequestStatus();
     }
 
-    uint64_t num_slices = data.getRawSlices(nullptr, 0);
-    absl::FixedArray<Buffer::RawSlice> slices(num_slices);
-    data.getRawSlices(slices.begin(), num_slices);
-    for (const Buffer::RawSlice& slice : slices) {
+    for (const Buffer::RawSlice& slice : data.getRawSlices()) {
         size_t requestLen = modsec_transaction_->getRequestBodyLength();
         // If append fails or append reached the limit, test for intervention (in case SecRequestBodyLimitAction is set to Reject)
         // Note, we can't rely solely on the return value of append, when SecRequestBodyLimitAction is set to Reject it returns true and sets the intervention
@@ -218,7 +215,7 @@ FilterHeadersStatus HttpModSecurityFilter::encodeHeaders(ResponseHeaderMap& head
         return getResponseHeadersStatus();
     }
     // TODO - do we want to support dynamicMetadata?
-    const auto& metadata = encoder_callbacks_->route()->routeEntry()->metadata();
+    const envoy::config::core::v3::Metadata* metadata = encoder_callbacks_->route()->routeEntry()->metadata()->get();
     const auto& disable = Envoy::Config::Metadata::metadataValue(metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().Disable);
     const auto& disable_response = Envoy::Config::Metadata::metadataValue(metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().DisableResponse);
     if (disable.bool_value() || disable_response.bool_value()) {
@@ -258,10 +255,7 @@ FilterDataStatus HttpModSecurityFilter::encodeData(Buffer::Instance& data, bool 
         return getResponseStatus();
     }
     
-    uint64_t num_slices = data.getRawSlices(nullptr, 0);
-    absl::FixedArray<Buffer::RawSlice> slices(num_slices);
-    data.getRawSlices(slices.begin(), num_slices);
-    for (const Buffer::RawSlice& slice : slices) {
+    for (const Buffer::RawSlice& slice : data.getRawSlices()) {
         size_t responseLen = modsec_transaction_->getResponseBodyLength();
         // If append fails or append reached the limit, test for intervention (in case SecResponseBodyLimitAction is set to Reject)
         // Note, we can't rely solely on the return value of append, when SecResponseBodyLimitAction is set to Reject it returns true and sets the intervention
