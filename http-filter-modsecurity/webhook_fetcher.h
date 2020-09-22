@@ -48,7 +48,7 @@ public:
    * This function will be called when webhook successfully called remote
    * @param data remote data
    */
-  virtual void onSuccess(const Http::AsyncClient::ResponseMessagePtr& response) PURE;
+  virtual void onSuccess(const Http::ResponseMessagePtr&& response) PURE;
 
   /**
    * This function is called when error happens during webhook.
@@ -72,7 +72,7 @@ public:
   ~WebhookFetcher() override;
 
   // Http::AsyncClient::Callbacks
-  void onSuccess(const Http::AsyncClient::Request& request, Http::AsyncClient::ResponseMessagePtr&& response) override;
+  void onSuccess(const Http::AsyncClient::Request& request, Http::ResponseMessagePtr&& response) override;
   void onFailure(const Http::AsyncClient::Request& request, Http::AsyncClient::FailureReason reason) override;
 
   /**
