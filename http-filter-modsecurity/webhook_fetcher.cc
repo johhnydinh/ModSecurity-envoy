@@ -53,7 +53,7 @@ void WebhookFetcher::onSuccess(const Http::AsyncClient::Request& request, Http::
   const uint64_t status_code = Http::Utility::getResponseStatus(response->headers());
   if (status_code == enumToInt(Http::Code::OK)) {
     ENVOY_LOG(debug, "Webhook [uri = {}]: success", uri_.uri());
-    callback_.onSuccess(response);
+    callback_.onSuccess(std::move(response));
   } else {
     ENVOY_LOG(debug, "Webhook [uri = {}]: bad response status code {}", uri_.uri(),
               status_code);
