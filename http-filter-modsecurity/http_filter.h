@@ -105,7 +105,7 @@ private:
   /**
    * @return true if intervention of current transaction is disruptive, false otherwise
    */
-  bool intervention();
+  bool interventionLog();
 
   FilterHeadersStatus getRequestHeadersStatus();
   FilterDataStatus getRequestStatus();
@@ -118,6 +118,7 @@ private:
   // will return ::Continue.
   // This is to allow the local reply to flow back to the downstream.
   bool intervined_;
+  bool logged_;
   bool request_processed_;
   bool response_processed_;
   // TODO - convert three booleans to state?

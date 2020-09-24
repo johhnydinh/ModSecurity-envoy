@@ -72,7 +72,7 @@ void HttpModSecurityFilterConfig::onFailure(FailureReason reason) {
 
 
 HttpModSecurityFilter::HttpModSecurityFilter(HttpModSecurityFilterConfigSharedPtr config)
-    : config_(config), intervined_(false), request_processed_(false), response_processed_(false) {
+    : config_(config), intervined_(false), request_processed_(false), response_processed_(false), logged_(false) {
     
     modsec_transaction_.reset(new modsecurity::Transaction(config_->modsec_.get(), config_->modsec_rules_.get(), this));
 }
@@ -128,7 +128,7 @@ FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(RequestHeaderMap& heade
                                           downstreamAddress->ip()->port(),
                                           localAddress->ip()->addressAsString().c_str(), 
                                           localAddress->ip()->port());
-    if (intervention()) {
+    if (interventionLog()) {
         return FilterHeadersStatus::StopIteration;
     }
 
@@ -137,7 +137,7 @@ FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(RequestHeaderMap& heade
     modsec_transaction_->processURI(std::string(uri->value().getStringView()).c_str(), 
                                     std::string(method->value().getStringView()).c_str(),
                                     getProtocolString(decoder_callbacks_->streamInfo().protocol().value_or(Protocol::Http11)));
-    if (intervention()) {
+    if (interventionLog()) {
         return FilterHeadersStatus::StopIteration;
     }
     
@@ -160,7 +160,7 @@ FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(RequestHeaderMap& heade
     if (end_stream) {
         request_processed_ = true;
     }
-    if (intervention()) {
+    if (interventionLog()) {
         return FilterHeadersStatus::StopIteration;
     }
     return getRequestHeadersStatus();
@@ -180,7 +180,7 @@ FilterDataStatus HttpModSecurityFilter::decodeData(Buffer::Instance& data, bool 
         if (modsec_transaction_->appendRequestBody(static_cast<unsigned char*>(slice.mem_), slice.len_) == false ||
             (slice.len_ > 0 && requestLen == modsec_transaction_->getRequestBodyLength())) {
             ENVOY_LOG(debug, "HttpModSecurityFilter::decodeData appendRequestBody reached limit");
-            if (intervention()) {
+            if (interventionLog()) {
                 return FilterDataStatus::StopIterationNoBuffer;
             }
             // Otherwise set to process request
@@ -193,7 +193,7 @@ FilterDataStatus HttpModSecurityFilter::decodeData(Buffer::Instance& data, bool 
         request_processed_ = true;
         modsec_transaction_->processRequestBody();
     }
-    if (intervention()) {
+    if (interventionLog()) {
         return FilterDataStatus::StopIterationNoBuffer;
     } 
     return getRequestStatus();
@@ -238,7 +238,7 @@ FilterHeadersStatus HttpModSecurityFilter::encodeHeaders(ResponseHeaderMap& head
     modsec_transaction_->processResponseHeaders(code, 
             getProtocolString(encoder_callbacks_->streamInfo().protocol().value_or(Protocol::Http11)));
         
-    if (intervention()) {
+    if (interventionLog()) {
         return FilterHeadersStatus::StopIteration;
     }
     return getResponseHeadersStatus();
@@ -262,7 +262,7 @@ FilterDataStatus HttpModSecurityFilter::encodeData(Buffer::Instance& data, bool 
         if (modsec_transaction_->appendResponseBody(static_cast<unsigned char*>(slice.mem_), slice.len_) == false ||
             (slice.len_ > 0 && responseLen == modsec_transaction_->getResponseBodyLength())) {
             ENVOY_LOG(debug, "HttpModSecurityFilter::encodeData appendResponseBody reached limit");
-            if (intervention()) {
+            if (interventionLog()) {
                 return FilterDataStatus::StopIterationNoBuffer;
             }
             // Otherwise set to process response
@@ -275,7 +275,7 @@ FilterDataStatus HttpModSecurityFilter::encodeData(Buffer::Instance& data, bool 
         response_processed_ = true;
         modsec_transaction_->processResponseBody();
     }
-    if (intervention()) {
+    if (interventionLog()) {
         return FilterDataStatus::StopIterationNoBuffer;
     }
     return getResponseStatus();
@@ -294,9 +294,15 @@ void HttpModSecurityFilter::setEncoderFilterCallbacks(StreamEncoderFilterCallbac
     encoder_callbacks_ = &callbacks;
 }
 
-bool HttpModSecurityFilter::intervention() {
-    if (!intervined_ && modsec_transaction_->m_it.disruptive) {
-        // intervined_ must be set to true before sendLocalReply to avoid reentrancy when encoding the reply
+bool HttpModSecurityFilter::interventionLog() {
+    if (intervined_ || (modsec_transaction_->m_it.status == 200 && !modsec_transaction_->m_it.disruptive)) {
+        return intervined_;
+    }
+    if (!logged_) {
+        logged_ = true;
+        ENVOY_LOG(warn, "{}", modsec_transaction_->toJSON(modsec_transaction_->m_rules->m_auditLog->getParts()));
+    }
+    if (modsec_transaction_->m_it.disruptive) {
         intervined_ = true;
         ENVOY_LOG(debug, "intervention");
         decoder_callbacks_->sendLocalReply(static_cast<Http::Code>(modsec_transaction_->m_it.status), 
@@ -379,11 +385,11 @@ void HttpModSecurityFilter::logCb(const modsecurity::RuleMessage * ruleMessage) 
         ENVOY_LOG(error, "ruleMessage == nullptr");
         return;
     }
-    
-    ENVOY_LOG(info, "Rule Id: {} phase: {}",
+
+    ENVOY_LOG(debug, "Rule Id: {} phase: {}",
                     ruleMessage->m_ruleId,
                     ruleMessage->m_phase);
-    ENVOY_LOG(info, "* {} action. {}",
+    ENVOY_LOG(debug, "* {} action. {}",
                     // Note - since ModSecurity >= v3.0.3 disruptive actions do not invoke the callback
                     // see https://github.com/SpiderLabs/ModSecurity/commit/91daeee9f6a61b8eda07a3f77fc64bae7c6b7c36
                     ruleMessage->m_isDisruptive ? "Disruptive" : "Non-disruptive",

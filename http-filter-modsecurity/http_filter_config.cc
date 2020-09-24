@@ -40,7 +40,7 @@ private:
     Http::HttpModSecurityFilterConfigSharedPtr config =
         std::make_shared<Http::HttpModSecurityFilterConfig>(proto_config, context);
 
-    return [config, &context](Http::FilterChainFactoryCallbacks& callbacks) -> void {
+    return [config](Http::FilterChainFactoryCallbacks& callbacks) -> void {
       callbacks.addStreamFilter(
         std::make_shared<Http::HttpModSecurityFilter>(config)
       );

@@ -4,7 +4,7 @@ load(
     "@envoy//bazel:envoy_build_system.bzl",
     "envoy_cc_binary",
     "envoy_cc_library",
-    "envoy_cc_test"
+    "envoy_cc_test",
 )
 
 alias(
@@ -21,8 +21,19 @@ envoy_cc_binary(
         "//http-filter-modsecurity:http_filter_config",
         "@envoy//source/exe:envoy_main_entry_lib",
     ],
+    
     # Note - this really adds those as dynamic dependencies, this forces our docker image to have these libraries installed
-    linkopts = ["-lyajl", "-ldl", "-lrt", "-lpcre", "-lcurl", "-lxml2", "-lGeoIP"]
+    linkopts = ["-lyajl", "-ldl", "-lpcre", "-lcurl", "-lxml2", "-lGeoIP"] + select({
+        # macOS organization of libevent is different from Windows/Linux.
+        # Including libevent_core is a requirement on those platforms, but
+        # results in duplicate symbols when built on macOS.
+        # See https://github.com/lyft/envoy-mobile/issues/677 for details.
+        "@envoy//bazel:apple": [
+            "-L/usr/local/lib/",
+            "-L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib",
+            "-lfuzzy", "-llua5.3"
+        ]
+    }),
 )
 
 cc_import(

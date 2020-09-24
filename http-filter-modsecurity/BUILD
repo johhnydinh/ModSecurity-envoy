@@ -19,7 +19,9 @@ envoy_cc_binary(
 )
 
 # Don't need to set name and dest no more
-api_proto_package()
+api_proto_package(
+
+)
 
 envoy_cc_library(
     name = "http_filter_lib",
