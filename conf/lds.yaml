@@ -29,6 +29,7 @@ resources:
                     # disable: true
                     # disable_request: true
                     # disable_response: true
+                    # no_audit_log: false
         http_filters:
         # before envoy.router because order matters!
         - name: envoy.filters.http.modsecurity

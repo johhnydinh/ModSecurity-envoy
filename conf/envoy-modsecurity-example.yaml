@@ -27,6 +27,7 @@ static_resources:
                       # disable: true
                       # disable_request: true
                       # disable_response: true
+                      # no_audit_log: false
           http_filters:
           - name: envoy.filters.http.modsecurity          # before envoy.router because order matters!
             config:

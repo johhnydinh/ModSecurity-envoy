@@ -67,13 +67,15 @@ See the examples in [conf](conf).
 Note: By adding metadata to specific routes, you can have granular control to disable the filter:
 ```yaml
 metadata:
-filter_metadata:
+  filter_metadata:
     envoy.filters.http.modsecurity:
       # To only disable requests / responses processing
       # disable_request: true
       # disable_response: true
       # Or, as a shorthand, use disable to disable both
       disable: true
+      # set to true to disable default json audit log on envoy log output
+      no_audit_log: false
 ```
 
 The configuration for the filter is provided under the http_filters:

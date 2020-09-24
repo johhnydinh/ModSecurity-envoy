@@ -72,7 +72,7 @@ void HttpModSecurityFilterConfig::onFailure(FailureReason reason) {
 
 
 HttpModSecurityFilter::HttpModSecurityFilter(HttpModSecurityFilterConfigSharedPtr config)
-    : config_(config), intervined_(false), request_processed_(false), response_processed_(false), logged_(false) {
+    : config_(config), intervined_(false), request_processed_(false), response_processed_(false), logged_(false), no_audit_log_(false) {
     
     modsec_transaction_.reset(new modsecurity::Transaction(config_->modsec_.get(), config_->modsec_rules_.get(), this));
 }
@@ -109,12 +109,17 @@ FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(RequestHeaderMap& heade
     const auto& metadata = decoder_callbacks_->route()->routeEntry()->metadata();
     const auto& disable = Envoy::Config::Metadata::metadataValue(&metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().Disable);
     const auto& disable_request = Envoy::Config::Metadata::metadataValue(&metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().DisableRequest);
+    const auto& no_audit_log = Envoy::Config::Metadata::metadataValue(&metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().NoAuditLog);
     if (disable_request.bool_value() || disable.bool_value()) {
         ENVOY_LOG(debug, "Filter disabled");
         request_processed_ = true;
         return FilterHeadersStatus::Continue;
     }
     
+    if (no_audit_log.bool_value()) {
+        no_audit_log_ = true;
+    }
+
     auto downstreamAddress = decoder_callbacks_->streamInfo().downstreamLocalAddress();
     // TODO - Upstream is (always?) still not resolved in this stage. Use our local proxy's ip. Is this what we want?
     ASSERT(decoder_callbacks_->connection() != nullptr);
@@ -298,7 +303,7 @@ bool HttpModSecurityFilter::interventionLog() {
     if (intervined_ || (modsec_transaction_->m_it.status == 200 && !modsec_transaction_->m_it.disruptive)) {
         return intervined_;
     }
-    if (!logged_) {
+    if (!logged_ && !no_audit_log_) {
         logged_ = true;
         ENVOY_LOG(warn, "{}", modsec_transaction_->toJSON(modsec_transaction_->m_rules->m_auditLog->getParts()));
     }

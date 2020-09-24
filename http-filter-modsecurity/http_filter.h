@@ -121,6 +121,7 @@ private:
   bool logged_;
   bool request_processed_;
   bool response_processed_;
+  bool no_audit_log_;
   // TODO - convert three booleans to state?
 };
 

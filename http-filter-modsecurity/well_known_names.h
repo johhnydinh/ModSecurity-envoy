@@ -34,6 +34,8 @@ public:
   const std::string DisableResponse = "disable_response";
   // Disable ModSecurity (both for requests and responses)
   const std::string Disable = "disable";
+  // Disable default json audit log on envoy log output
+  const std::string NoAuditLog = "no_audit_log";
 };
 
 typedef ConstSingleton<MetadataModSecurityKeysValues>
