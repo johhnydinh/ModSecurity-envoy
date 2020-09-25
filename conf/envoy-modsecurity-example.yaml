@@ -30,10 +30,11 @@ static_resources:
                       # no_audit_log: false
           http_filters:
           - name: envoy.filters.http.modsecurity          # before envoy.router because order matters!
-            config:
-             rules: conf/modsecurity.conf
+            typed_config:
+              "@type": type.googleapis.com/modsecurity.Decoder
+              rules: conf/modsecurity.conf
           - name: envoy.router
-            config: {}
+            typed_config: {}
   clusters:
   - name: service1
     connect_timeout: 8s

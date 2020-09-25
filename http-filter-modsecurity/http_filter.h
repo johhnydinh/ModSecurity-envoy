@@ -19,7 +19,7 @@ namespace Http {
 class HttpModSecurityFilterConfig : public Logger::Loggable<Logger::Id::filter>,
                                     public WebhookFetcherCallback {
 public:
-  HttpModSecurityFilterConfig(const modsecurity::ModsecurityFilterConfigDecoder& proto_config,
+  HttpModSecurityFilterConfig(const modsecurity::Decoder& proto_config,
                               Server::Configuration::FactoryContext&);
   ~HttpModSecurityFilterConfig();
 

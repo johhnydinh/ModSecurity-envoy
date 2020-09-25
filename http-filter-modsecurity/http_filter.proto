@@ -6,7 +6,7 @@ import "google/protobuf/duration.proto";
 
 import "validate/validate.proto";
 
-message ModsecurityFilterConfigDecoder {
+message Decoder {
     // If set, rules are loaded from this path
     string rules_path = 1;
     

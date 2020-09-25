@@ -83,7 +83,8 @@ The configuration for the filter is provided under the http_filters:
         http_filters:
         # before envoy.router because order matters!
         - name: envoy.filters.http.modsecurity
-          config:
+          typed_config:
+            "@type": type.googleapis.com/modsecurity.Decoder
             # ModSecurity rules can either be provided by a path
             rules_path: /etc/modsecurity.conf
             # Additionally you can provide inline rules (will be loaded after processing the rules_path, if provided)
