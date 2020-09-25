@@ -113,6 +113,8 @@ private:
   FilterHeadersStatus getResponseHeadersStatus();
   FilterDataStatus getResponseStatus();
 
+  void generateBoundary(std::string *boundary);
+
   // This bool is set by intervention before generating a local reply.
   // Once set, it means that for this http session is already intervined and any subsequent call to the filter's methods
   // will return ::Continue.

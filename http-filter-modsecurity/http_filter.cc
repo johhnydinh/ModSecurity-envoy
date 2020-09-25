@@ -12,6 +12,7 @@
 #include "envoy/server/filter_config.h"
 #include "common/json/json_loader.h"
 #include "modsecurity/rule_message.h"
+#include "modsecurity/audit_log.h"
 
 namespace Envoy {
 namespace Http {
@@ -305,7 +306,15 @@ bool HttpModSecurityFilter::interventionLog() {
     }
     if (!logged_ && !no_audit_log_) {
         logged_ = true;
-        ENVOY_LOG(warn, "{}", modsec_transaction_->toJSON(modsec_transaction_->m_rules->m_auditLog->getParts()));
+        int parts = modsec_transaction_->m_rules->m_auditLog->getParts();
+        if (modsec_transaction_->m_rules->m_auditLog->m_format == modsecurity::audit_log::AuditLog::JSONAuditLogFormat) {
+            ENVOY_LOG(warn, "{}", modsec_transaction_->toJSON(parts));
+        } else {
+            std::string boundary;
+            generateBoundary(&boundary);
+            ENVOY_LOG(warn, "{}", modsec_transaction_->toOldAuditLogFormat(parts, "-" + boundary + "--"));
+        }
+        
     }
     if (modsec_transaction_->m_it.disruptive) {
         intervined_ = true;
@@ -376,6 +385,17 @@ FilterDataStatus HttpModSecurityFilter::getResponseStatus() {
                 FilterDataStatus::StopIterationAndBuffer : 
                 FilterDataStatus::Continue;
 
+}
+
+void HttpModSecurityFilter::generateBoundary(std::string *boundary) {
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+
+    for (int i = 0; i < 8; ++i) {
+        boundary->append(1, alphanum[rand() % (sizeof(alphanum) - 1)]);
+    }
 }
 
 void HttpModSecurityFilter::_logCb(void *data, const void *ruleMessagev) {
