@@ -20,9 +20,7 @@ namespace Http {
 HttpModSecurityFilterConfig::HttpModSecurityFilterConfig(const modsecurity::Decoder& proto_config,
                                                          Server::Configuration::FactoryContext& context)
     : rules_path_(proto_config.rules_path()),
-      rules_inline_(proto_config.rules_inline()),
-      webhook_(proto_config.webhook()),
-      tls_(context.threadLocal().allocateSlot()) {
+      rules_inline_(proto_config.rules_inline()) {
 
     modsec_.reset(new modsecurity::ModSecurity());
     modsec_->setConnectorInformation("ModSecurity-test v0.0.1-alpha (ModSecurity test)");
@@ -48,29 +46,10 @@ HttpModSecurityFilterConfig::HttpModSecurityFilterConfig(const modsecurity::Deco
             ENVOY_LOG(info, "Loaded {} inline rules", rulesLoaded);
         };
     }
-
-    tls_->set([this, &context](Event::Dispatcher&) -> ThreadLocal::ThreadLocalObjectSharedPtr {
-      return std::make_shared<ThreadLocalWebhook>(new WebhookFetcher(context.clusterManager(), 
-                webhook_.http_uri(), 
-                webhook_.secret(), 
-                *this));
-    });
 }
 
 HttpModSecurityFilterConfig::~HttpModSecurityFilterConfig() {
 }
-
-WebhookFetcherSharedPtr HttpModSecurityFilterConfig::webhook_fetcher() {
-    return tls_->getTyped<ThreadLocalWebhook>().webhook_fetcher_;
-}
-
-void HttpModSecurityFilterConfig::onSuccess(Http::ResponseMessagePtr&& response) {
-    ENVOY_LOG(info, "webhook success!");
-}
-void HttpModSecurityFilterConfig::onFailure(FailureReason reason) {
-    ENVOY_LOG(info, "webhook failure!");
-}
-
 
 HttpModSecurityFilter::HttpModSecurityFilter(HttpModSecurityFilterConfigSharedPtr config)
     : config_(config), intervined_(false), request_processed_(false), response_processed_(false), logged_(false), no_audit_log_(false) {
@@ -102,6 +81,9 @@ const char* getProtocolString(const Protocol protocol) {
 
 FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(RequestHeaderMap& headers, bool end_stream) {
     ENVOY_LOG(debug, "HttpModSecurityFilter::decodeHeaders");
+    if (decoder_callbacks_->route() == nullptr) {
+        return Http::FilterHeadersStatus::Continue;
+    }
     if (intervined_ || request_processed_) {
         ENVOY_LOG(debug, "Processed");
         return getRequestHeadersStatus();
@@ -109,18 +91,18 @@ FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(RequestHeaderMap& heade
     // TODO - do we want to support dynamicMetadata?
     const auto& metadata = decoder_callbacks_->route()->routeEntry()->metadata();
     const auto& disable = Envoy::Config::Metadata::metadataValue(&metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().Disable);
+    ENVOY_LOG(debug, "titi3");
     const auto& disable_request = Envoy::Config::Metadata::metadataValue(&metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().DisableRequest);
     const auto& no_audit_log = Envoy::Config::Metadata::metadataValue(&metadata, ModSecurityMetadataFilter::get().ModSecurity, MetadataModSecurityKey::get().NoAuditLog);
+     
     if (disable_request.bool_value() || disable.bool_value()) {
         ENVOY_LOG(debug, "Filter disabled");
         request_processed_ = true;
         return FilterHeadersStatus::Continue;
     }
-    
     if (no_audit_log.bool_value()) {
         no_audit_log_ = true;
     }
-
     auto downstreamAddress = decoder_callbacks_->streamInfo().downstreamLocalAddress();
     // TODO - Upstream is (always?) still not resolved in this stage. Use our local proxy's ip. Is this what we want?
     ASSERT(decoder_callbacks_->connection() != nullptr);
@@ -137,7 +119,6 @@ FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(RequestHeaderMap& heade
     if (interventionLog()) {
         return FilterHeadersStatus::StopIteration;
     }
-
     auto uri = headers.Path();
     auto method = headers.Method();
     modsec_transaction_->processURI(std::string(uri->value().getStringView()).c_str(), 
@@ -146,7 +127,6 @@ FilterHeadersStatus HttpModSecurityFilter::decodeHeaders(RequestHeaderMap& heade
     if (interventionLog()) {
         return FilterHeadersStatus::StopIteration;
     }
-    
     headers.iterate(
             [](const HeaderEntry& header, void* context) -> HeaderMap::Iterate {
                 
@@ -178,7 +158,6 @@ FilterDataStatus HttpModSecurityFilter::decodeData(Buffer::Instance& data, bool 
         ENVOY_LOG(debug, "Processed");
         return getRequestStatus();
     }
-
     for (const Buffer::RawSlice& slice : data.getRawSlices()) {
         size_t requestLen = modsec_transaction_->getRequestBodyLength();
         // If append fails or append reached the limit, test for intervention (in case SecRequestBodyLimitAction is set to Reject)
@@ -216,6 +195,9 @@ void HttpModSecurityFilter::setDecoderFilterCallbacks(StreamDecoderFilterCallbac
 
 FilterHeadersStatus HttpModSecurityFilter::encodeHeaders(ResponseHeaderMap& headers, bool end_stream) {
     ENVOY_LOG(debug, "HttpModSecurityFilter::encodeHeaders");
+    if (decoder_callbacks_->route() == nullptr) {
+        return Http::FilterHeadersStatus::Continue;
+    }
     if (intervined_ || response_processed_) {
         ENVOY_LOG(debug, "Processed");
         return getResponseHeadersStatus();

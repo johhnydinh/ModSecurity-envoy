@@ -47,15 +47,18 @@ sudo apt-get install -y g++ flex bison curl doxygen libyajl-dev libgeoip-dev lib
 
 To build run
 ```bash
-bazel build //:envoy
+./bin/build-local.sh
 ```
 
 For more information on envoy's building system read Envoy's [documentation](https://github.com/envoyproxy/envoy).
 
 ### Using the docker images
 
-You can build docker images for envoy-build and envoy
-See [ci/README.md](ci/README.md)
+You can build docker images for envoy-build and envoy by running:
+
+```bash
+./bin/build_envoy_modsec.sh
+```
 
 ## Configuration
 
@@ -91,16 +94,6 @@ The configuration for the filter is provided under the http_filters:
             rules_inline: |
               # ModSecurity rules
               # ...
-            # Optionally, you can provide a webhook configuration
-            webhook:
-              # The http_uri field is mandatory
-              http_uri:
-                uri: http://localhost:10000/wh_callback
-                cluster: service2
-                timeout:
-                  seconds: 3
-              # Optionally you can provide a secret to sign the webhooks with an HMAC-256 (for more information see the .proto file)
-              secret: webhook_secret
         - name: envoy.router
           config: {}
 ```
@@ -171,20 +164,4 @@ check the logs via `tail -f` and you will see the following output
 
 ```bash
 ModSecurity: Warning. Matched "Operator `Rx' with parameter `test' against variable `ARGS:param1' (Value: `test' ) [file "crs-setup.conf"] [line "7"] [id "1"] [rev ""] [msg "test"] [data ""] [severity "0"] [ver ""] [maturity "0"] [accuracy "0"] [hostname ""] [uri "/"] [unique_id "152991475598.002681"] [ref "o0,4v13,4"]
-```
-
-If we have a webhook installed, triggering a rule will result in a similar request:
-
-```
-POST /wh_callback
-Headers:
-host: localhost:10000
-content-type: application/json
-content-length: 530
-x-envoy-webhook-signature-type: HMAC-SHA256
-x-envoy-webhook-signature-value: d7c224c82cee677e32dc3ae0d2e60fae5a0c9714613b55bd0791fd226d8f22e7
-x-envoy-internal: true
-x-envoy-expected-rq-timeout-ms: 3000
-
-{"accuracy": 0, "clientIpAddress": "127.0.0.1", "data": "", "id": "156690498720.063187", "isDisruptive": false, "match": "Matched \"Operator `Rx' with parameter `test' against variable `ARGS:param1' (Value: `test' )", "maturity": 0, "message": "Test rule", "noAuditLog": false, "phase": 1, "reference": "o0,4v13,4", "rev": "", "ruleFile": "<<reference missing or not informed>>", "ruleId": 1, "ruleLine": 6, "saveMessage": true, "serverIpAddress": "127.0.0.1", "severity": 0, "uriNoQueryStringDecoded": "/", "ver": "", "tags": []}
 ```

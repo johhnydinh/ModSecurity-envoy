@@ -26,8 +26,8 @@ api_proto_package(
 envoy_cc_library(
     name = "http_filter_lib",
     copts=["-Wno-unused-function", "-Wno-unused-parameter", "-Wno-reorder", "-Wno-unused-variable", "-Imodsecurity/include"],
-    srcs = ["utility.cc", "http_filter.cc", "webhook_fetcher.cc"],
-    hdrs = glob(["utility.h", "http_filter.h", "webhook_fetcher.h", "well_known_names.h", "json_utils.h"]),
+    srcs = ["utility.cc", "http_filter.cc"],
+    hdrs = glob(["utility.h", "http_filter.h", "well_known_names.h", "json_utils.h"]),
     repository = "@envoy",
     deps = [
         ":pkg_cc_proto",

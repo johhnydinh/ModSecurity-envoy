@@ -6,7 +6,6 @@
 #include "envoy/server/filter_config.h"
 #include "envoy/thread_local/thread_local.h"
 #include "well_known_names.h"
-#include "webhook_fetcher.h"
 
 #include "http-filter-modsecurity/http_filter.pb.h"
 
@@ -16,8 +15,7 @@
 namespace Envoy {
 namespace Http {
 
-class HttpModSecurityFilterConfig : public Logger::Loggable<Logger::Id::filter>,
-                                    public WebhookFetcherCallback {
+class HttpModSecurityFilterConfig : public Logger::Loggable<Logger::Id::filter> {
 public:
   HttpModSecurityFilterConfig(const modsecurity::Decoder& proto_config,
                               Server::Configuration::FactoryContext&);
@@ -25,28 +23,15 @@ public:
 
   const std::string& rules_path() const { return rules_path_; }
   const std::string& rules_inline() const { return rules_inline_; }
-  const modsecurity::ModsecurityWebhook& webhook() const { return webhook_; }
-
-  WebhookFetcherSharedPtr webhook_fetcher();
 
   std::shared_ptr<modsecurity::ModSecurity> modsec_;
   std::shared_ptr<modsecurity::Rules> modsec_rules_;
 
-  // Webhook Callbacks
-  void onSuccess(Http::ResponseMessagePtr&& response) override;
-  void onFailure(FailureReason reason) override;
-
 private:
 
-  struct ThreadLocalWebhook : public ThreadLocal::ThreadLocalObject {
-    ThreadLocalWebhook(WebhookFetcher* webhook_fetcher) : webhook_fetcher_(webhook_fetcher) {}
-    WebhookFetcherSharedPtr webhook_fetcher_;
-  };
 
   const std::string rules_path_;
   const std::string rules_inline_;
-  const modsecurity::ModsecurityWebhook webhook_;
-  ThreadLocal::SlotPtr tls_;
 };
 
 typedef std::shared_ptr<HttpModSecurityFilterConfig> HttpModSecurityFilterConfigSharedPtr;
