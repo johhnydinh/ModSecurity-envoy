@@ -67,6 +67,8 @@ make install
 
 echo "building envoy..."
 cd ../ModSecurity-envoy
-bazel build --jobs=6 -c opt --copt="-Wno-maybe-uninitialized" --copt="-Wno-uninitialized" --cxxopt="-Wno-uninitialized" //:envoy-static.stripped --config=sizeopt
+nb_cpu=$(python -c 'import multiprocessing as mp; print(mp.cpu_count())')
+nb_cpu=$((${nb_cpu}+1))
+bazel build --jobs=${nb_cpu} -c opt --copt="-Wno-maybe-uninitialized" --copt="-Wno-uninitialized" --cxxopt="-Wno-uninitialized" //:envoy-static.stripped --config=sizeopt
 cp /ModSecurity-envoy/bazel-bin/envoy-static.stripped /build/envoy
 chmod 0766 /build/envoy
