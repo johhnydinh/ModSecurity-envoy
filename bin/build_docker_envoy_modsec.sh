@@ -38,7 +38,6 @@ cd ModSecurity-envoy/envoy
 git pull origin master && git checkout ${ENVOY_VERSION:-v1.16.0}
 cd ..
 
-
 echo "Installing bazel ..."
 wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64
 chmod +x /usr/local/bin/bazel
@@ -67,6 +66,11 @@ make install
 
 echo "building envoy..."
 cd ../ModSecurity-envoy
+
+pushd "./envoy"
+git apply "/build-scripts/build.patch"
+popd
+
 nb_cpu=$(python -c 'import multiprocessing as mp; print(mp.cpu_count())')
 nb_cpu=$((${nb_cpu}+1))
 bazel build --jobs=${nb_cpu} -c opt --copt="-Wno-maybe-uninitialized" --copt="-Wno-uninitialized" --cxxopt="-Wno-uninitialized" //:envoy-static.stripped --config=sizeopt

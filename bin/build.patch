@@ -1,12 +1,13 @@
 diff --git a/bazel/envoy_internal.bzl b/bazel/envoy_internal.bzl
-index 4406f08c4..cb8f616b0 100644
+index 5ad86609a..9b70106a2 100644
 --- a/bazel/envoy_internal.bzl
 +++ b/bazel/envoy_internal.bzl
-@@ -8,6 +8,7 @@ def envoy_copts(repository, test = False):
+@@ -8,6 +8,8 @@ def envoy_copts(repository, test = False):
          "-Wall",
          "-Wextra",
          "-Werror",
 +        "-Wno-range-loop-analysis",
++        "-Wno-unused-variable",
          "-Wnon-virtual-dtor",
          "-Woverloaded-virtual",
          "-Wold-style-cast",
