@@ -32,7 +32,8 @@ envoy_cc_binary(
             "-L/usr/local/lib/",
             "-L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib",
             "-lfuzzy", "-llua5.3"
-        ]
+        ],
+        "//conditions:default": []
     }),
 )
 
