@@ -35,7 +35,7 @@ git submodule update --init
 cd ..
 
 cd ModSecurity-envoy/envoy
-git pull origin master && git checkout ${ENVOY_VERSION:-v1.14.4}
+git pull origin master && git checkout ${ENVOY_VERSION:-v1.16.0}
 cd ..
 
 
