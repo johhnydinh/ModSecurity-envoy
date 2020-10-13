@@ -7,7 +7,7 @@ index 5ad86609a..9b70106a2 100644
          "-Wextra",
          "-Werror",
 +        "-Wno-range-loop-analysis",
-+        "-Wno-unused-variable",
++        "-Wno-error",
          "-Wnon-virtual-dtor",
          "-Woverloaded-virtual",
          "-Wold-style-cast",

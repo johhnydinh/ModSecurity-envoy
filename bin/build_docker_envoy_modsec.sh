@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 set -e
-apt-get update && apt-get install -y \
+apt update && apt install -y \
    wget \
    libtool \
    cmake \
@@ -12,6 +12,7 @@ apt-get update && apt-get install -y \
    unzip \
    git \
    g++ \
+   gnupg \
    clang-format-5.0 \
    virtualenv \
    python \
@@ -26,6 +27,8 @@ apt-get update && apt-get install -y \
    libpcre++-dev \
    libxml2-dev
 
+curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > /etc/apt/trusted.gpg.d/bazel.gpg
+
 git clone --recurse-submodules -j8 https://github.com/ArthurHlt/ModSecurity-envoy.git
 git clone https://github.com/SpiderLabs/ModSecurity.git
 
@@ -39,13 +42,13 @@ git pull origin master && git checkout ${ENVOY_VERSION:-v1.16.0}
 cd ..
 
 echo "Installing bazel ..."
-wget -O /usr/local/bin/bazel https://github.com/bazelbuild/bazelisk/releases/download/v0.0.8/bazelisk-linux-amd64
-chmod +x /usr/local/bin/bazel
+echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
+apt update && apt install -y bazel
 echo "Finished installing bazel."
 
 
 echo "Installing golang ..."
-wget -qO- https://dl.google.com/go/go1.13.7.linux-amd64.tar.gz | tar -C /usr/local -xzf -
+wget -qO- https://dl.google.com/go/go1.15.2.linux-amd64.tar.gz | tar -C /usr/local -xzf -
 
 export GOPATH="${HOME}/gobuild"
 export PATH="${PATH}:${GOPATH}/bin:/usr/local/go/bin"

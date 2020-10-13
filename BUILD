@@ -29,11 +29,23 @@ envoy_cc_binary(
         # results in duplicate symbols when built on macOS.
         # See https://github.com/lyft/envoy-mobile/issues/677 for details.
         "@envoy//bazel:apple": [
+            "-pagezero_size 10000",
+            "-image_base 100000000",
             "-L/usr/local/lib/",
             "-L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib",
             "-lfuzzy", "-llua5.3"
         ],
-        "//conditions:default": []
+        "//conditions:default": [
+            "-pthread",
+            "-lrt",
+            "-ldl",
+            "-Wl,-z,relro,-z,now",
+            "-Wl,--hash-style=gnu",
+        ]
+    })+ select({
+        "@envoy//bazel:boringssl_fips": [],
+        "@envoy//bazel:windows_x86_64": [],
+        "//conditions:default": ["-pie"],
     }),
 )
 
