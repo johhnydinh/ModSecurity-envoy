@@ -225,7 +225,8 @@ FilterHeadersStatus HttpModSecurityFilter::encodeHeaders(ResponseHeaderMap& head
             getProtocolString(encoder_callbacks_->streamInfo().protocol().value_or(Protocol::Http11)));
         
     if (end_stream) {
-        request_processed_ = true;
+        ENVOY_LOG(debug, "HttpModSecurityFilter::encodeHeaders -> end stream");
+        response_processed_ = true;
     }
     
     if (interventionLog()) {
