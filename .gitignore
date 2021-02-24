@@ -6,3 +6,4 @@ owasp-modsecurity*
 .cache
 build_release*/
 /result-*
+/bazel-cache

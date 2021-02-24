@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 set -e
+
+
+
 apt update && apt install -y \
    wget \
    libtool \
@@ -43,9 +46,13 @@ cd ..
 
 echo "Installing bazel ..."
 echo "deb [arch=amd64] https://storage.googleapis.com/bazel-apt stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
-apt update && apt install -y bazel
+apt update && apt install -y bazel=3.7.2
 echo "Finished installing bazel."
 
+echo "Installing LLVM ..."
+mkdir /llvm
+wget -qO- https://github.com/llvm/llvm-project/releases/download/llvmorg-11.0.1/clang+llvm-11.0.1-x86_64-linux-gnu-ubuntu-16.04.tar.xz | tar -C /llvm -xJf -
+llvm_path="$(realpath /llvm/*/)"
 
 echo "Installing golang ..."
 wget -qO- https://dl.google.com/go/go1.15.2.linux-amd64.tar.gz | tar -C /usr/local -xzf -
@@ -76,6 +83,8 @@ popd
 
 nb_cpu=$(python -c 'import multiprocessing as mp; print(mp.cpu_count())')
 nb_cpu=$((${nb_cpu}+1))
+
+echo "build --config=clang" >> user.bazelrc
 bazel build --jobs=${nb_cpu} -c opt --copt="-Wno-maybe-uninitialized" --copt="-Wno-uninitialized" --cxxopt="-Wno-uninitialized" //:envoy-static.stripped --config=sizeopt
 cp /ModSecurity-envoy/bazel-bin/envoy-static.stripped /build/envoy
 chmod 0766 /build/envoy
