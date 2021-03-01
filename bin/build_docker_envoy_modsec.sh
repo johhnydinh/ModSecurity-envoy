@@ -85,6 +85,8 @@ popd
 nb_cpu=$(python -c 'import multiprocessing as mp; print(mp.cpu_count())')
 nb_cpu=$((${nb_cpu}+1))
 
+envoy/bazel/setup_clang.sh ${llvm_path}
+
 echo "build --config=clang" >> user.bazelrc
 bazel build --jobs=${nb_cpu} -c opt --copt="-Wno-uninitialized" --cxxopt="-Wno-uninitialized" //:envoy-static.stripped --config=sizeopt
 cp /ModSecurity-envoy/bazel-bin/envoy-static.stripped /build/envoy

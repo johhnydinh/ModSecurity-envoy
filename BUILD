@@ -33,7 +33,7 @@ envoy_cc_binary(
             "-image_base 100000000",
             "-L/usr/local/lib/",
             "-L/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/usr/lib",
-            "-lfuzzy", "-llua5.3"
+            "-lfuzzy", "-llua5.4"
         ],
         "//conditions:default": [
             "-pthread",

@@ -88,12 +88,20 @@ The configuration for the filter is provided under the http_filters:
         - name: envoy.filters.http.modsecurity
           typed_config:
             "@type": type.googleapis.com/modsecurity.Decoder
-            # ModSecurity rules can either be provided by a path
-            rules_path: /etc/modsecurity.conf
-            # Additionally you can provide inline rules (will be loaded after processing the rules_path, if provided)
-            rules_inline: |
+            # ModSecurity rules can either be provided by a list of path
+            rules_path: [/etc/modsecurity.conf]
+            # Additionally you can provide a list of inline rules (will be loaded after processing the rules_path, if provided)
+            rules_inline: 
+            - |
               # ModSecurity rules
               # ...
+            # List of remotes url to retrieve rules
+            # Key is given in http header `ModSec-key`
+            remotes:
+            - key: a-key
+              url: https://url.com/my-rules
+            # If set to true, if no errors occured during remote download, those rules will overwrite all rules.
+            remotes_overwrite_on_success: true
         - name: envoy.router
           config: {}
 ```

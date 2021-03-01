@@ -21,17 +21,14 @@ public:
                               Server::Configuration::FactoryContext&);
   ~HttpModSecurityFilterConfig();
 
-  const std::string& rules_path() const { return rules_path_; }
-  const std::string& rules_inline() const { return rules_inline_; }
+  const modsecurity::Decoder& decoder() const { return decoder_; }
 
   std::shared_ptr<modsecurity::ModSecurity> modsec_;
   std::shared_ptr<modsecurity::Rules> modsec_rules_;
 
 private:
 
-
-  const std::string rules_path_;
-  const std::string rules_inline_;
+  const modsecurity::Decoder& decoder_;
 };
 
 typedef std::shared_ptr<HttpModSecurityFilterConfig> HttpModSecurityFilterConfigSharedPtr;

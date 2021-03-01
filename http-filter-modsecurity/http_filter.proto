@@ -2,15 +2,24 @@ syntax = "proto3";
 
 package modsecurity;
 
-import "google/protobuf/duration.proto";
-
 import "validate/validate.proto";
+
+message Remote {
+    string key = 1;
+    string url = 2;
+}
 
 message Decoder {
     // If set, rules are loaded from this path
-    string rules_path = 1;
-    
+    repeated string rules_path = 1;
+
     // If set, rules are loaded from this inline configuration.
     // Note, if both rules_path and rules_inline are set, rules_path is first loaded and afterwards rules_inline is loaded
-    string rules_inline = 2;
+    repeated string rules_inline = 2;
+
+    // If set, it will takes rules from url set with a http header ModSec-key set to key
+    repeated Remote remotes = 3;
+    
+    // If set to true, if no errors occured during remote download, those rules will overwrite all rules.
+    bool remotes_overwrite_on_success = 4;
 }

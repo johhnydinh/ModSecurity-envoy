@@ -19,8 +19,7 @@ namespace Http {
 
 HttpModSecurityFilterConfig::HttpModSecurityFilterConfig(const modsecurity::Decoder& proto_config,
                                                          Server::Configuration::FactoryContext& context)
-    : rules_path_(proto_config.rules_path()),
-      rules_inline_(proto_config.rules_inline()) {
+    : decoder_(proto_config) {
 
     modsec_.reset(new modsecurity::ModSecurity());
     modsec_->setConnectorInformation("ModSecurity-test v0.0.1-alpha (ModSecurity test)");
@@ -28,24 +27,56 @@ HttpModSecurityFilterConfig::HttpModSecurityFilterConfig(const modsecurity::Deco
                                                            modsecurity::IncludeFullHighlightLogProperty);
 
     modsec_rules_.reset(new modsecurity::Rules());
-    if (!rules_path().empty()) {
-        int rulesLoaded = modsec_rules_->loadFromUri(rules_path().c_str());
-        ENVOY_LOG(debug, "Loading ModSecurity config from {}", rules_path());
+    
+    for (int i = 0; i < decoder().rules_path_size(); i++ ){
+        int rulesLoaded = modsec_rules_->loadFromUri(decoder().rules_path(i).c_str());
+        ENVOY_LOG(debug, "Loading ModSecurity config from {}", decoder().rules_path(i));
         if (rulesLoaded == -1) {
             ENVOY_LOG(error, "Failed to load rules: {}", modsec_rules_->getParserError());
         } else {
             ENVOY_LOG(info, "Loaded {} rules", rulesLoaded);
         };
     }
-    if (!rules_inline().empty()) {
-        int rulesLoaded = modsec_rules_->load(rules_inline().c_str());
-        ENVOY_LOG(debug, "Loading ModSecurity inline rules");
+
+    for (int i = 0; i < decoder().rules_inline_size(); i++ ){
+        int rulesLoaded = modsec_rules_->load(decoder().rules_inline(i).c_str());
+        ENVOY_LOG(debug, "Loading ModSecurity config from inline");
         if (rulesLoaded == -1) {
             ENVOY_LOG(error, "Failed to load rules: {}", modsec_rules_->getParserError());
         } else {
-            ENVOY_LOG(info, "Loaded {} inline rules", rulesLoaded);
+            ENVOY_LOG(info, "Loaded {} rules", rulesLoaded);
         };
     }
+
+    if (decoder().remotes_overwrite_on_success()) {
+        bool hasErrors = false;
+        modsecurity::Rules* new_modsec_rules = new modsecurity::Rules();
+        for (int i = 0; i < decoder().remotes_size(); i++ ){
+            int rulesLoaded = new_modsec_rules->loadRemote(decoder().remotes(i).key().c_str(), decoder().remotes(i).url().c_str());
+            ENVOY_LOG(debug, "Loading ModSecurity config from remote url {}", decoder().remotes(i).url());
+            if (rulesLoaded == -1) {
+                hasErrors = true;
+                ENVOY_LOG(error, "Failed to load one remote rules: {}. We fallback to local rules.", new_modsec_rules->getParserError());
+                break;
+            } else {
+                ENVOY_LOG(info, "Loaded {} rules remotely", rulesLoaded);
+            };
+        }
+        if (!hasErrors){
+            modsec_rules_.reset(new_modsec_rules);
+        }
+    }else {
+        for (int i = 0; i < decoder().remotes_size(); i++ ){
+            int rulesLoaded = modsec_rules_->loadRemote(decoder().remotes(i).key().c_str(), decoder().remotes(i).url().c_str());
+            ENVOY_LOG(debug, "Loading ModSecurity config from remote url {}", decoder().remotes(i).url());
+            if (rulesLoaded == -1) {
+                ENVOY_LOG(error, "Failed to load rules: {}", modsec_rules_->getParserError());
+            } else {
+                ENVOY_LOG(info, "Loaded {} rules", rulesLoaded);
+            };
+        }
+    }
+    
 }
 
 HttpModSecurityFilterConfig::~HttpModSecurityFilterConfig() {
