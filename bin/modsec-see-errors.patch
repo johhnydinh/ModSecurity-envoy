@@ -1,0 +1,13 @@
+diff --git a/src/rules.cc b/src/rules.cc
+index eff766f9..ef8b6c5b 100644
+--- a/src/rules.cc
++++ b/src/rules.cc
+@@ -135,6 +135,8 @@ int Rules::loadRemote(const char *key, const char *uri) {
+ 
+     if (ret) {
+         return this->load(client.content.c_str(), uri);
++    }else {
++        m_parserError << client.error;
+     }
+ 
+     return -1;

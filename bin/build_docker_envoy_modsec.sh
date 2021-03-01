@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
-
-
 apt update && apt install -y \
    wget \
    libtool \
@@ -25,9 +23,10 @@ apt update && apt install -y \
    libyajl-dev \
    libgeoip-dev \
    dh-autoreconf \
-   libcurl4-gnutls-dev \
+   libcurl4-openssl-dev \
    libxml2 \
    libpcre++-dev \
+   openssl \
    libxml2-dev
 
 curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > /etc/apt/trusted.gpg.d/bazel.gpg
