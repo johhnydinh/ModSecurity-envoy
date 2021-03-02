@@ -66,12 +66,14 @@ go get -u github.com/bazelbuild/buildtools/buildozer
 echo "Finished installing buildifier and buildozer."
 # bazel build --jobs=2 --explain=file.txt --verbose_explanations //source/exe:envoy-static
 
+nb_cpu=$(python -c 'import multiprocessing as mp; print(mp.cpu_count())')
+
 echo "building modsecurity ..."
 cd ../ModSecurity
 git apply "/build-scripts/modsec-see-errors.patch"
 ./build.sh
 ./configure
-make
+make -j${nb_cpu}
 make install
 
 echo "building envoy..."
@@ -81,7 +83,7 @@ pushd "./envoy"
 git apply "/build-scripts/build.patch"
 popd
 
-nb_cpu=$(python -c 'import multiprocessing as mp; print(mp.cpu_count())')
+
 nb_cpu=$((${nb_cpu}+1))
 
 envoy/bazel/setup_clang.sh ${llvm_path}

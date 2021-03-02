@@ -21,7 +21,7 @@ index 096619703..aa4452eb8 100644
          # (the libraries are found ok).
 -        "CURL_CA_PATH": "none",
 -        "CMAKE_USE_OPENSSL": "off",
-+        "CURL_CA_PATH": "/etc/ssl/certs/ca-certificates.crt",
++        "CURL_CA_PATH": "auto",
 +        "CMAKE_USE_OPENSSL": "on",
          "OPENSSL_ROOT_DIR": "$EXT_BUILD_DEPS",
          # NGHTTP2.
