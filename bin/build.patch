@@ -1,5 +1,5 @@
 diff --git a/bazel/envoy_internal.bzl b/bazel/envoy_internal.bzl
-index 5ad86609a..9b70106a2 100644
+index 5ad86609a..510e3ae21 100644
 --- a/bazel/envoy_internal.bzl
 +++ b/bazel/envoy_internal.bzl
 @@ -8,6 +8,8 @@ def envoy_copts(repository, test = False):
@@ -11,3 +11,18 @@ index 5ad86609a..9b70106a2 100644
          "-Wnon-virtual-dtor",
          "-Woverloaded-virtual",
          "-Wold-style-cast",
+diff --git a/bazel/foreign_cc/BUILD b/bazel/foreign_cc/BUILD
+index 096619703..aa4452eb8 100644
+--- a/bazel/foreign_cc/BUILD
++++ b/bazel/foreign_cc/BUILD
+@@ -126,8 +126,8 @@ envoy_cmake_external(
+         # SSL (via Envoy's SSL dependency) is disabled, curl's CMake uses
+         # FindOpenSSL.cmake which fails at what looks like version parsing
+         # (the libraries are found ok).
+-        "CURL_CA_PATH": "none",
+-        "CMAKE_USE_OPENSSL": "off",
++        "CURL_CA_PATH": "/etc/ssl/certs/ca-certificates.crt",
++        "CMAKE_USE_OPENSSL": "on",
+         "OPENSSL_ROOT_DIR": "$EXT_BUILD_DEPS",
+         # NGHTTP2.
+         "USE_NGHTTP2": "on",

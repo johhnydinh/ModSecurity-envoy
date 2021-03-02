@@ -23,7 +23,7 @@ envoy_cc_binary(
     ],
     
     # Note - this really adds those as dynamic dependencies, this forces our docker image to have these libraries installed
-    linkopts = ["-lyajl", "-ldl", "-lpcre", "-lcurl", "-lxml2", "-lGeoIP"] + select({
+    linkopts = ["-lyajl", "-ldl", "-lpcre", "-lxml2", "-lGeoIP"] + select({
         # macOS organization of libevent is different from Windows/Linux.
         # Including libevent_core is a requirement on those platforms, but
         # results in duplicate symbols when built on macOS.

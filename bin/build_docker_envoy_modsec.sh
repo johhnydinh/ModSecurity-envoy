@@ -23,10 +23,9 @@ apt update && apt install -y \
    libyajl-dev \
    libgeoip-dev \
    dh-autoreconf \
-   libcurl4-openssl-dev \
+   libcurl4-gnutls-dev \
    libxml2 \
    libpcre++-dev \
-   openssl \
    libxml2-dev
 
 curl -fsSL https://bazel.build/bazel-release.pub.gpg | gpg --dearmor > /etc/apt/trusted.gpg.d/bazel.gpg
@@ -69,6 +68,7 @@ echo "Finished installing buildifier and buildozer."
 
 echo "building modsecurity ..."
 cd ../ModSecurity
+git apply "/build-scripts/modsec-see-errors.patch"
 ./build.sh
 ./configure
 make
