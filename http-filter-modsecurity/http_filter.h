@@ -17,18 +17,18 @@ namespace Http {
 
 class HttpModSecurityFilterConfig : public Logger::Loggable<Logger::Id::filter> {
 public:
-  HttpModSecurityFilterConfig(const modsecurity::Decoder& proto_config,
+  HttpModSecurityFilterConfig(const envoy::config::filter::http::modsec::v2::Decoder& proto_config,
                               Server::Configuration::FactoryContext&);
   ~HttpModSecurityFilterConfig();
 
-  const modsecurity::Decoder& decoder() const { return decoder_; }
+  const envoy::config::filter::http::modsec::v2::Decoder& decoder() const { return decoder_; }
 
   std::shared_ptr<modsecurity::ModSecurity> modsec_;
   std::shared_ptr<modsecurity::Rules> modsec_rules_;
 
 private:
 
-  const modsecurity::Decoder& decoder_;
+  const envoy::config::filter::http::modsec::v2::Decoder& decoder_;
 };
 
 typedef std::shared_ptr<HttpModSecurityFilterConfig> HttpModSecurityFilterConfigSharedPtr;
