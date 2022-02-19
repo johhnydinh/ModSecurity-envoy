@@ -20,14 +20,14 @@ public:
                                                      FactoryContext& context) override {
 
     return createFilter(
-        Envoy::MessageUtil::downcastAndValidate<const modsecurity::Decoder&>(proto_config, context.messageValidationVisitor()), context);
+        Envoy::MessageUtil::downcastAndValidate<const envoy::config::filter::http::modsec::v2::Decoder&>(proto_config, context.messageValidationVisitor()), context);
   }
 
   /**
    *  Return the Protobuf Message that represents your config incase you have config proto
    */
   ProtobufTypes::MessagePtr createEmptyConfigProto() override {
-    return ProtobufTypes::MessagePtr{new modsecurity::Decoder()};
+    return ProtobufTypes::MessagePtr{new envoy::config::filter::http::modsec::v2::Decoder()};
   }
 
   std::string name() const override { 
@@ -35,7 +35,7 @@ public:
   }
 
 private:
-  Http::FilterFactoryCb createFilter(const modsecurity::Decoder& proto_config, FactoryContext& context) {
+  Http::FilterFactoryCb createFilter(const envoy::config::filter::http::modsec::v2::Decoder& proto_config, FactoryContext& context) {
     Http::HttpModSecurityFilterConfigSharedPtr config =
         std::make_shared<Http::HttpModSecurityFilterConfig>(proto_config, context);
 
