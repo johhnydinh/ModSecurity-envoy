@@ -17,7 +17,7 @@
 namespace Envoy {
 namespace Http {
 
-HttpModSecurityFilterConfig::HttpModSecurityFilterConfig(const modsecurity::Decoder& proto_config,
+HttpModSecurityFilterConfig::HttpModSecurityFilterConfig(const envoy::config::filter::http::modsec::v2::Decoder& proto_config,
                                                          Server::Configuration::FactoryContext& context)
     : decoder_(proto_config) {
 
