@@ -1,13 +1,17 @@
 syntax = "proto3";
 
-// package modsecurity.filter;
-package envoy.extensions.filters.http.modsecurity.v1;
+package envoy.config.filter.http.modsec.v2;
 
+import "udpa/annotations/migrate.proto";
+import "udpa/annotations/status.proto";
 import "validate/validate.proto";
 
-option java_package = "io.envoyproxy.envoy.extensions.filters.http.modsecurity.v1";
-option java_outer_classname = "ModSecurityProto";
-option go_package = "github.com/johhnydinh/ModSecurity-envoy";
+option java_package = "io.envoyproxy.envoy.config.filter.http.modsec.v2";
+option java_outer_classname = "ModsecProto";
+option java_multiple_files = true;
+option go_package = "github.com/johhnydinh/modsec/modsec/v2;modsecv2";
+option (udpa.annotations.file_status).package_version_status = ACTIVE;
+
 
 message Remote {
     string key = 1;
