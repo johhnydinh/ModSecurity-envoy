@@ -1,17 +1,10 @@
 syntax = "proto3";
 
-package envoy.config.filter.http.modsec.v2;
+package modsecurity;
 
-import "udpa/annotations/migrate.proto";
-import "udpa/annotations/status.proto";
 import "validate/validate.proto";
 
-option java_package = "io.envoyproxy.envoy.config.filter.http.modsec.v2";
-option java_outer_classname = "ModsecProto";
-option java_multiple_files = true;
 option go_package = "github.com/johhnydinh/modsec/modsec/v2;modsecv2";
-option (udpa.annotations.file_status).package_version_status = ACTIVE;
-
 
 message Remote {
     string key = 1;
@@ -20,14 +13,14 @@ message Remote {
 
 message Decoder {
     // If set, rules are loaded from this path
-    repeated string rules_path = 1;
+    string rules_path = 1;
 
     // If set, rules are loaded from this inline configuration.
     // Note, if both rules_path and rules_inline are set, rules_path is first loaded and afterwards rules_inline is loaded
-    repeated string rules_inline = 2;
+    string rules_inline = 2;
 
     // If set, it will takes rules from url set with a http header ModSec-key set to key
-    repeated Remote remotes = 3;
+    Remote remotes = 3;
     
     // If set to true, if no errors occured during remote download, those rules will overwrite all rules.
     bool remotes_overwrite_on_success = 4;
